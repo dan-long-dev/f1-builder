@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { config } from '../config';
-import { SLOTS, type Parts, type SlotId, type VariantId } from '../catalog';
+import { SLOTS, type Livery, type Parts, type SlotId, type VariantId } from '../catalog';
 import { disposeObject } from '../geometry/helpers';
 import { Materials } from './materials';
+import { Decals } from './decals';
 import type { PartContext, PartVariant } from './parts/types';
 import { buildChassis } from './parts/chassis';
 import { buildHalo } from './parts/halo';
@@ -33,28 +34,54 @@ export class Car {
   readonly group = new THREE.Group();
   readonly materials: Materials;
   readonly parts: Parts;
+  readonly decals: Decals;
+  readonly chassis: THREE.Group;
   private readonly ctx: PartContext;
   private slotGroups = new Map<SlotId, THREE.Group>();
   private wheels: THREE.Group | null = null;
+  private livery: Livery;
+  private decalTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Called after any geometry changes (part swap, decals) so highlights can be re-applied. */
+  onChanged: (() => void) | null = null;
 
-  constructor(materials: Materials, parts: Parts) {
+  constructor(materials: Materials, parts: Parts, livery: Livery) {
     this.materials = materials;
     this.parts = { ...parts };
+    this.livery = livery;
     this.ctx = { materials, car: config.car };
     this.group.name = 'car';
-    this.group.add(buildChassis(this.ctx), buildHalo(this.ctx), buildFloor(this.ctx), buildSuspension(this.ctx));
+    materials.applyLivery(livery);
+    this.chassis = buildChassis(this.ctx);
+    this.group.add(this.chassis, buildHalo(this.ctx), buildFloor(this.ctx), buildSuspension(this.ctx));
     for (const slot of SLOTS) {
       if (slot === 'tyres' || slot === 'rims') continue;
       this.rebuildSlot(slot);
     }
     this.rebuildWheels();
+    this.decals = new Decals((owner) => (owner === 'chassis' ? this.chassis : this.slotGroups.get(owner)));
+    void this.decals.apply(livery).then(() => this.onChanged?.());
   }
 
   setPart<S extends SlotId>(slot: S, variant: VariantId<S>): void {
     if (this.parts[slot] === variant) return;
     (this.parts as Record<SlotId, string>)[slot] = variant;
-    if (slot === 'tyres' || slot === 'rims') this.rebuildWheels();
-    else this.rebuildSlot(slot as SwappableSlot);
+    if (slot === 'tyres' || slot === 'rims') {
+      this.rebuildWheels();
+    } else {
+      this.rebuildSlot(slot as SwappableSlot);
+      void this.decals.refresh(slot as SwappableSlot).then(() => this.onChanged?.());
+    }
+  }
+
+  /** Apply a livery: repaint textures and recolour zones now; re-project decals shortly after (debounced). */
+  setLivery(livery: Livery): void {
+    this.livery = livery;
+    this.materials.applyLivery(livery);
+    if (this.decalTimer !== null) clearTimeout(this.decalTimer);
+    this.decalTimer = setTimeout(() => {
+      this.decalTimer = null;
+      void this.decals.apply(this.livery).then(() => this.onChanged?.());
+    }, 90);
   }
 
   /** The group for a slot (the wheels group for tyres/rims). */
@@ -63,6 +90,7 @@ export class Car {
   }
 
   dispose(): void {
+    this.decals.dispose();
     disposeObject(this.group, this.materials.shared);
   }
 

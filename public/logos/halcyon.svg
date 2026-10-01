@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160" fill="currentColor">
+  <circle cx="60" cy="80" r="30"/>
+  <path d="M60 10v24M60 126v24M10 80h24M86 80h24M24 44l17 17M78 99l17 17M96 44L79 61M42 99l-18 17" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+  <text x="118" textLength="272" lengthAdjust="spacingAndGlyphs" y="112" font-size="62" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" letter-spacing="3">HALCYON</text>
+</svg>

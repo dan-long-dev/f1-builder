@@ -21,11 +21,11 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] State module with URL encode/decode (parts only so far)
 
 ## Phase 4 — Livery
-- [ ] Zone colours: body, pattern, wings, rims, helmet
-- [ ] Patterns: solid, stripe, two-tone, fade, chevrons, flash (canvas livery)
-- [ ] Preset logo set (8 generic SVGs) on logo zones via decal projection
-- [ ] Race number decal on nose and engine cover
-- [ ] Livery in URL state
+- [x] Zone colours: body, pattern, wings, rims, helmet
+- [x] Patterns: solid, stripe, two-tone, fade, chevrons, flash (canvas livery)
+- [x] Preset logo set (8 generic SVGs) on logo zones via decal projection
+- [x] Race number decal on nose and engine cover
+- [x] Livery in URL state
 
 ## Phase 5 — Environments
 - [ ] Studio, pit garage, track, sunset: background, env map, lights, floor, fog

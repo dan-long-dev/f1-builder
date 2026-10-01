@@ -5,7 +5,7 @@ import { Picker } from './scene/picking';
 import { Materials } from './car/materials';
 import { Car } from './car/car';
 import { SLOTS, SLOT_LABELS } from './catalog';
-import { Store, decodeState, writeStateToUrl } from './state';
+import { Store, decodeState, encodeState, writeStateToUrl } from './state';
 import { Panel } from './ui/panel';
 
 declare global {
@@ -28,7 +28,7 @@ export function boot(): void {
   buildStudio(viewer.scene, viewer.renderer);
 
   const materials = new Materials();
-  const car = new Car(materials, store.state.parts);
+  const car = new Car(materials, store.state.parts, store.state.livery);
   viewer.scene.add(car.group);
 
   const defaultHint = hint?.textContent ?? '';
@@ -40,14 +40,18 @@ export function boot(): void {
   });
   const panel = new Panel(panelBody, store, { onSelectSlot: (slot) => picker.select(slot) });
 
+  car.onChanged = () => picker.refresh();
   store.subscribe((state, patch) => {
     if (patch.parts) {
       for (const slot of SLOTS) car.setPart(slot, state.parts[slot] as never);
       picker.refresh();
     }
+    if (patch.livery) car.setLivery(state.livery);
     writeStateToUrl(state);
   });
-  window.addEventListener('hashchange', () => store.set(decodeState(location.hash)));
+  window.addEventListener('hashchange', () => {
+    if (encodeState(store.state) !== location.hash.replace(/^#/, '')) store.replace(decodeState(location.hash));
+  });
 
   applyDebugViews(viewer);
   window.__f1 = { car, viewer, store, picker };
