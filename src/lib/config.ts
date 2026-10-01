@@ -29,6 +29,23 @@ export const config = {
     trackRear: 1.56,
     tyre: { frontDia: 0.72, rearDia: 0.72, frontWidth: 0.305, rearWidth: 0.405, rimDia: 0.457 },
     rideHeight: 0.04,
+    /** where the nose meets the monocoque, and the nose tip */
+    noseJoinZ: 1.95,
+    noseTipZ: 2.95,
+    /** driver helmet centre */
+    helmet: { x: 0, y: 0.7, z: 0.42, radius: 0.135 },
+    frontWing: { leadingZ: 3.0, y: 0.11, halfSpan: 0.95 },
+    rearWing: { leadingZ: -2.1, y: 0.8, halfSpan: 0.47 },
+    floorY: 0.05,
+    sidepod: { inletZ: 0.65, endZ: -1.75 },
+    engineCover: { startZ: 0.25, endZ: -2.05 },
+  },
+  colors: {
+    body: '#d9232e',
+    pattern: '#f4f4f2',
+    wings: '#141416',
+    rims: '#2b2d31',
+    helmet: '#f2c230',
   },
   studio: {
     background: '#0f1012',

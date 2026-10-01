@@ -10,9 +10,9 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] `npm run build` passes; `npm run shot` produces a screenshot
 
 ## Phase 2 — Procedural car
-- [ ] Profile + loft utilities with UVs and caps; airfoil loft; rod helper
-- [ ] Parts: chassis, nose, front wing, rear wing, sidepods, engine cover + airbox, floor + diffuser, halo, wheels + suspension, driver + headrest + mirrors
-- [ ] Car assembled from `config.car`, one variant per slot; reads as an F1 car from every angle
+- [x] Profile + loft utilities with UVs and caps; airfoil loft; rod helper
+- [x] Parts: chassis, nose, front wing, rear wing, sidepods, engine cover + airbox, floor + diffuser, halo, wheels + suspension, driver + headrest + mirrors
+- [x] Car assembled from `config.car`, one variant per slot; reads as an F1 car from every angle
 
 ## Phase 3 — Picking and swapping
 - [ ] Hover highlight, click to select, click empty space to deselect

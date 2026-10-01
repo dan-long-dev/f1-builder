@@ -16,7 +16,8 @@
 - `npm run build` — static build to `dist/`
 - `npm run preview` — serve `dist/`
 - `npm run check` — `astro check` (TypeScript across `.astro` and `.ts`)
-- `npm run shot -- [url] [out.png]` — headless screenshot of a running server (default http://localhost:4321 → `scratch/shot.png`). Use it to look at the result after a change.
+- `npm run shot -- [url] [out.png] [w] [h]` — headless screenshot of a running server (default http://localhost:4321 → `scratch/shot.png`). Use it to look at the result after a change.
+- Debug camera params on any URL: `?cam=34|34r|front|side|rear|top|low` or `?cam=x,y,z&target=x,y,z`; `?quad` (or `?quad=top,side`) renders several views in one frame for a screenshot.
 
 Deploy: Netlify reads `netlify.toml` (build `npm run build`, publish `dist`, Node 22).
 

@@ -1,17 +1,23 @@
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { config } from '../config';
 
 /**
- * Phase-1 studio: a floor that catches shadows and a three-point-ish light rig.
- * Replaced by the environment presets in phase 5.
+ * Phase-1 studio: a floor that catches shadows, a light rig and a procedural environment map
+ * so clearcoat and metals have something to reflect. Replaced by the environment presets in phase 5.
  */
-export function buildStudio(scene: THREE.Scene): THREE.Group {
+export function buildStudio(scene: THREE.Scene, renderer: THREE.WebGLRenderer): THREE.Group {
   const s = config.studio;
   const group = new THREE.Group();
   group.name = 'studio';
 
   scene.background = new THREE.Color(s.background);
   scene.fog = new THREE.Fog(s.background, 9, 28);
+
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.55;
+  pmrem.dispose();
 
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(30, 64),

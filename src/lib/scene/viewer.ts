@@ -16,7 +16,7 @@ export class Viewer {
   readonly canvas: HTMLCanvasElement;
   readonly host: HTMLElement;
 
-  private clock = new THREE.Clock();
+  private timer = new THREE.Timer();
   private frameCallbacks = new Set<FrameCallback>();
   private running = false;
   private resizeObserver: ResizeObserver;
@@ -36,7 +36,7 @@ export class Viewer {
     this.renderer.toneMappingExposure = config.render.exposure;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const c = config.camera;
     this.camera = new THREE.PerspectiveCamera(c.fov, 1, 0.05, 200);
@@ -74,7 +74,6 @@ export class Viewer {
   start(): void {
     if (this.running) return;
     this.running = true;
-    this.clock.start();
     this.renderer.setAnimationLoop(() => this.tick());
   }
 
@@ -89,8 +88,9 @@ export class Viewer {
   }
 
   private tick(): void {
-    const dt = Math.min(this.clock.getDelta(), 0.1);
-    const t = this.clock.elapsedTime;
+    this.timer.update();
+    const dt = Math.min(this.timer.getDelta(), 0.1);
+    const t = this.timer.getElapsed();
     this.controls.update();
     for (const cb of this.frameCallbacks) cb(dt, t);
     this.render();
