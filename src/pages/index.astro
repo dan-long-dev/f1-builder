@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="F1 Builder">
+  <div class="app" id="app">
+    <main class="stage" id="stage">
+      <canvas id="view" aria-label="3D view of the car"></canvas>
+      <div class="hud">
+        <span class="hud__hint" id="hint">Drag to orbit · Scroll to zoom · Click a part</span>
+      </div>
+    </main>
+    <aside class="panel" id="panel" aria-label="Builder controls">
+      <header class="panel__head">
+        <h1 class="panel__title">F1 Builder</h1>
+        <p class="panel__sub">Pick a part, paint it, share it.</p>
+      </header>
+      <div class="panel__body" id="panel-body">
+        <p class="panel__empty">Controls land here in the next phase.</p>
+      </div>
+    </aside>
+  </div>
+</Base>
+
+<script>
+  import { boot } from '../lib/main';
+  boot();
+</script>

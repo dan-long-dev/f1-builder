@@ -1,0 +1,24 @@
+{
+  "name": "f1-builder",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "shot": "node scripts/shot.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.3.5",
+    "lil-gui": "^0.21.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "latest",
+    "@types/three": "^0.186.0",
+    "playwright-core": "latest",
+    "typescript": "^5.9.0"
+  }
+}
