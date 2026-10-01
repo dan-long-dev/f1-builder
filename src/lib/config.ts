@@ -40,6 +40,23 @@ export const config = {
     sidepod: { inletZ: 0.65, endZ: -1.75 },
     engineCover: { startZ: 0.25, endZ: -2.05 },
   },
+  anim: {
+    /** damping rate for eased values (higher = snappier) */
+    damping: 6,
+    drsOpenDeg: -28,
+    turntableSpeed: 1.1,
+  },
+  /** exploded-view offsets per part, metres. Sidepods and wheels use |x| per side. */
+  explode: {
+    nose: [0, 0.12, 0.9] as [number, number, number],
+    frontWing: [0, -0.02, 1.5] as [number, number, number],
+    rearWing: [0, 0.4, -1.0] as [number, number, number],
+    engineCover: [0, 0.75, -0.25] as [number, number, number],
+    sidepods: [0.95, 0.06, 0] as [number, number, number],
+    wheels: [0.8, 0.22, 0] as [number, number, number],
+    halo: [0, 0.65, 0.05] as [number, number, number],
+    floor: [0, -0.4, 0] as [number, number, number],
+  },
   colors: {
     body: '#d9232e',
     pattern: '#f4f4f2',

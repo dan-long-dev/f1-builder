@@ -15,8 +15,11 @@ import { frontWingVariants } from './parts/frontWing';
 import { rearWingVariants } from './parts/rearWing';
 import { sidepodVariants } from './parts/sidepods';
 import { engineCoverVariants } from './parts/engineCover';
+import { DRS_FLAP_NAME } from './parts/rearWing';
 
 type SwappableSlot = Exclude<SlotId, 'tyres' | 'rims'>;
+
+const _target = new THREE.Vector3();
 
 const BUILDERS: { [S in SwappableSlot]: Record<VariantId<S>, PartVariant> } = {
   nose: noseVariants,
@@ -41,6 +44,10 @@ export class Car {
   private wheels: THREE.Group | null = null;
   private livery: Livery;
   private decalTimer: ReturnType<typeof setTimeout> | null = null;
+  private drsOpen = false;
+  private exploded = false;
+  private explodables: { obj: THREE.Object3D; base: THREE.Vector3; offset: THREE.Vector3 }[] = [];
+  private explodablesDirty = true;
   /** Called after any geometry changes (part swap, decals) so highlights can be re-applied. */
   onChanged: (() => void) | null = null;
 
@@ -59,7 +66,7 @@ export class Car {
     }
     this.rebuildWheels();
     this.decals = new Decals((owner) => (owner === 'chassis' ? this.chassis : this.slotGroups.get(owner)));
-    void this.decals.apply(livery).then(() => this.onChanged?.());
+    void this.decals.apply(livery).then(() => this.decalsChanged());
   }
 
   setPart<S extends SlotId>(slot: S, variant: VariantId<S>): void {
@@ -69,7 +76,7 @@ export class Car {
       this.rebuildWheels();
     } else {
       this.rebuildSlot(slot as SwappableSlot);
-      void this.decals.refresh(slot as SwappableSlot).then(() => this.onChanged?.());
+      void this.decals.refresh(slot as SwappableSlot).then(() => this.decalsChanged());
     }
   }
 
@@ -80,8 +87,49 @@ export class Car {
     if (this.decalTimer !== null) clearTimeout(this.decalTimer);
     this.decalTimer = setTimeout(() => {
       this.decalTimer = null;
-      void this.decals.apply(this.livery).then(() => this.onChanged?.());
+      void this.decals.apply(this.livery).then(() => this.decalsChanged());
     }, 90);
+  }
+
+  private decalsChanged(): void {
+    // new sidepod decals start at the origin; when exploded they need to jump to the pod's current offset
+    this.explodablesDirty = true;
+    this.onChanged?.();
+  }
+
+  /** DRS: the rear flap pivots about its leading edge. Animated in `update`. */
+  setDrs(open: boolean): void {
+    this.drsOpen = open;
+  }
+
+  get drs(): boolean {
+    return this.drsOpen;
+  }
+
+  /** Exploded view: parts drift apart along per-slot directions. Animated in `update`. */
+  setExploded(on: boolean): void {
+    this.exploded = on;
+  }
+
+  get isExploded(): boolean {
+    return this.exploded;
+  }
+
+  /** Per-frame animation: DRS flap angle and explode offsets, both eased. */
+  update(dt: number): void {
+    const flap = this.slotGroups.get('rearWing')?.getObjectByName(DRS_FLAP_NAME);
+    if (flap) {
+      const target = this.drsOpen ? THREE.MathUtils.degToRad(config.anim.drsOpenDeg) : 0;
+      flap.rotation.x = THREE.MathUtils.damp(flap.rotation.x, target, config.anim.damping, dt);
+    }
+    if (this.explodablesDirty) this.collectExplodables();
+    const k = this.exploded ? 1 : 0;
+    for (const e of this.explodables) {
+      _target.copy(e.base).addScaledVector(e.offset, k);
+      e.obj.position.x = THREE.MathUtils.damp(e.obj.position.x, _target.x, config.anim.damping, dt);
+      e.obj.position.y = THREE.MathUtils.damp(e.obj.position.y, _target.y, config.anim.damping, dt);
+      e.obj.position.z = THREE.MathUtils.damp(e.obj.position.z, _target.z, config.anim.damping, dt);
+    }
   }
 
   /** The group for a slot (the wheels group for tyres/rims). */
@@ -92,6 +140,51 @@ export class Car {
   dispose(): void {
     this.decals.dispose();
     disposeObject(this.group, this.materials.shared);
+  }
+
+  /**
+   * Build the list of objects the exploded view moves. Slot groups move as a whole; sidepods and
+   * wheels move each side outward; the floor drops and the halo lifts.
+   */
+  private collectExplodables(): void {
+    this.explodablesDirty = false;
+    const ex = config.explode;
+    const list: typeof this.explodables = [];
+    const add = (obj: THREE.Object3D, offset: [number, number, number]): void => {
+      const base = (obj.userData.basePos as THREE.Vector3 | undefined) ?? obj.position.clone();
+      obj.userData.basePos = base;
+      list.push({ obj, base, offset: new THREE.Vector3(...offset) });
+    };
+    const sideOf = (o: THREE.Object3D): number => {
+      if (o instanceof THREE.Mesh) {
+        o.geometry.computeBoundingBox();
+        const b = o.geometry.boundingBox;
+        if (b) return Math.sign((b.min.x + b.max.x) / 2 + o.position.x) || 1;
+      }
+      return Math.sign(o.position.x) || 1;
+    };
+    for (const [slot, g] of this.slotGroups) {
+      if (slot === 'sidepods') {
+        for (const child of g.children) {
+          const sgn = sideOf(child);
+          add(child, [sgn * ex.sidepods[0], ex.sidepods[1], ex.sidepods[2]]);
+        }
+      } else {
+        const off = (ex as Partial<Record<string, [number, number, number]>>)[slot];
+        if (off) add(g, off);
+      }
+    }
+    if (this.wheels) {
+      for (const w of this.wheels.children) {
+        const sgn = Math.sign(w.position.x) || 1;
+        add(w, [sgn * ex.wheels[0], ex.wheels[1], ex.wheels[2]]);
+      }
+    }
+    for (const child of this.group.children) {
+      if (child.name === 'halo') add(child, ex.halo);
+      if (child.name === 'floor') add(child, ex.floor);
+    }
+    this.explodables = list;
   }
 
   private rebuildSlot<S extends SwappableSlot>(slot: S): void {
@@ -106,6 +199,7 @@ export class Car {
     g.userData.slot = slot;
     this.group.add(g);
     this.slotGroups.set(slot, g);
+    this.explodablesDirty = true;
   }
 
   private rebuildWheels(): void {
@@ -115,5 +209,6 @@ export class Car {
     }
     this.wheels = buildWheels(this.ctx, { tyres: this.parts.tyres, rims: this.parts.rims });
     this.group.add(this.wheels);
+    this.explodablesDirty = true;
   }
 }

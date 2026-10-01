@@ -5,4 +5,10 @@ export default defineConfig({
   output: 'static',
   site: 'https://f1-builder.netlify.app',
   devToolbar: { enabled: false },
+  vite: {
+    build: {
+      // three.js is one large module; this is expected for a 3D app
+      chunkSizeWarningLimit: 900,
+    },
+  },
 });

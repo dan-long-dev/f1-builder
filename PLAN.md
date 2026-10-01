@@ -37,7 +37,7 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] 6 preset liveries + randomise
 
 ## Phase 7 — Flourishes and polish
-- [ ] DRS toggle (animated), turntable, exploded view
-- [ ] Mobile layout (panel as bottom sheet), touch picking
-- [ ] Debug GUI for tunables; perf pass (pixel-ratio cap, draw-call count)
-- [ ] README with Netlify deploy notes
+- [x] DRS toggle (animated), turntable, exploded view
+- [x] Mobile layout (panel as bottom sheet), touch picking
+- [x] Debug GUI for tunables; perf pass (pixel-ratio cap, draw-call count)
+- [x] README with Netlify deploy notes

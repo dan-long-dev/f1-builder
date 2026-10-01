@@ -17,6 +17,8 @@
 - `npm run preview` — serve `dist/`
 - `npm run check` — `astro check` (TypeScript across `.astro` and `.ts`)
 - `npm run shot -- [url] [out.png] [w] [h]` — headless screenshot of a running server (default http://localhost:4321 → `scratch/shot.png`). Use it to look at the result after a change.
+- `?debug` on any URL mounts the lil-gui panel (exposure, env intensity, lights, fov, draw calls, fps).
+- Keyboard: D = DRS, T = turntable, E = exploded view, R = random build, Esc = deselect.
 - Debug camera params on any URL: `?cam=34|34r|front|side|rear|top|low` or `?cam=x,y,z&target=x,y,z`; `?quad` (or `?quad=top,side`) renders several views in one frame for a screenshot.
 
 Deploy: Netlify reads `netlify.toml` (build `npm run build`, publish `dist`, Node 22).
@@ -66,6 +68,8 @@ scripts/shot.mjs            screenshot helper
 - Colours in state are `#rrggbb` strings. Livery zones and ids are declared once in `catalog.ts`; everything else imports from there.
 - Lofted meshes carry UVs with u around the profile (0 at top centre, 0.5 at bottom centre) and v along the length (0 at the part's front). Canvas liveries are painted in that space.
 - Dispose geometries, materials and textures when a part or environment is replaced.
+- Static detail that never moves independently is merged into one geometry (suspension rods, rim spokes) to keep draw calls down; the whole car is ~150 calls.
+- View options (DRS, turntable, exploded) are not build state: they live in `main.ts`, not the store or URL.
 - Check the result after each change: `npm run build`, then `npm run dev` + `npm run shot` or a browser.
 
 ## Technique vocabulary
@@ -88,3 +92,4 @@ Use these names; they define the intended result.
 | Frame capture | Render, then read the canvas in the same tick with `toBlob`, so `preserveDrawingBuffer` stays off. | — |
 | Explode offsets | Each slot has a direction; exploded view lerps the group along it. | — |
 | Tween | A value eased toward a target in the render loop (`lerp`/`damp`). No tween library. | `THREE.MathUtils.damp` |
+| Merged static | Several static meshes sharing a material baked into one geometry with their transforms applied. | `mergeGeometries` in `geometry/loft.ts` |

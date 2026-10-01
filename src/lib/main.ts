@@ -7,9 +7,12 @@ import { Car } from './car/car';
 import { SLOTS, SLOT_LABELS } from './catalog';
 import { Store, decodeState, encodeState, writeStateToUrl } from './state';
 import { Panel } from './ui/panel';
+import { randomBuild } from './random';
 import { captureFrame, canShareImage, downloadBlob, shareImage } from './ui/snapshot';
 import { copyLink } from './ui/share';
 import { Toast } from './ui/toast';
+import { mountDebug } from './ui/debug';
+import { config } from './config';
 
 declare global {
   interface Window {
@@ -35,10 +38,12 @@ export function boot(): void {
   const car = new Car(materials, store.state.parts, store.state.livery);
   viewer.scene.add(car.group);
 
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  if (hint && coarse) hint.textContent = 'Drag to orbit · Pinch to zoom · Tap a part';
   const defaultHint = hint?.textContent ?? '';
   const picker = new Picker(viewer, car, {
     onHover: (slot) => {
-      if (hint) hint.textContent = slot ? `${SLOT_LABELS[slot]} · click to select` : defaultHint;
+      if (hint) hint.textContent = slot ? `${SLOT_LABELS[slot]} · ${coarse ? 'tap' : 'click'} to select` : defaultHint;
     },
     onSelect: (slot) => panel.setSelected(slot),
   });
@@ -56,6 +61,37 @@ export function boot(): void {
   });
   window.addEventListener('hashchange', () => {
     if (encodeState(store.state) !== location.hash.replace(/^#/, '')) store.replace(decodeState(location.hash));
+  });
+
+  // view options: DRS, turntable, exploded view
+  viewer.onFrame((dt) => car.update(dt));
+  viewer.controls.autoRotateSpeed = config.anim.turntableSpeed;
+  const setDrs = (on: boolean): void => {
+    car.setDrs(on);
+    panel.setToggle('drs', on);
+  };
+  const setTurntable = (on: boolean): void => {
+    viewer.controls.autoRotate = on;
+    panel.setToggle('turntable', on);
+  };
+  const setExploded = (on: boolean): void => {
+    car.setExploded(on);
+    panel.setToggle('exploded', on);
+  };
+  panel.addToggles('View', [
+    { id: 'drs', label: 'DRS open', hint: 'Shortcut: D', on: false, onChange: setDrs },
+    { id: 'turntable', label: 'Turntable', hint: 'Shortcut: T', on: false, onChange: setTurntable },
+    { id: 'exploded', label: 'Exploded view', hint: 'Shortcut: E', on: false, onChange: setExploded },
+  ]);
+  window.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement | null;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    const k = e.key.toLowerCase();
+    if (k === 'd') setDrs(!car.drs);
+    else if (k === 't') setTurntable(!viewer.controls.autoRotate);
+    else if (k === 'e') setExploded(!car.isExploded);
+    else if (k === 'r') store.set(randomBuild());
   });
 
   // snapshot + share
@@ -87,6 +123,7 @@ export function boot(): void {
   });
 
   applyDebugViews(viewer);
+  if (new URLSearchParams(location.search).has('debug')) mountDebug(viewer, car);
   window.__f1 = { car, viewer, store, picker };
 
   let frames = 0;

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { tyreProfile } from '../../geometry/profiles';
 import { mesh } from '../../geometry/helpers';
+import { mergeGeometries } from '../../geometry/loft';
 import type { PartContext } from './types';
 import type { VariantId } from '../../catalog';
 
@@ -81,16 +82,19 @@ function buildWheel(ctx: PartContext, choice: WheelChoice, width: number, radius
     disc.position.x = faceX - 0.01;
     rim.add(disc);
   } else {
+    // spokes merged into one geometry per wheel
     const count = choice.rims === 'spoke10' ? 10 : 5;
     const spokeW = choice.rims === 'spoke10' ? 0.028 : 0.05;
+    const spokes: THREE.BufferGeometry[] = [];
     for (let i = 0; i < count; i++) {
-      const spoke = mesh(new THREE.BoxGeometry(0.03, rimR - 0.07, spokeW), m.rim);
-      spoke.position.set(faceX - 0.03, (rimR - 0.07) / 2 + 0.05, 0);
-      const holder = new THREE.Group();
-      holder.add(spoke);
-      holder.rotation.x = (i / count) * Math.PI * 2;
-      rim.add(holder);
+      const sg = new THREE.BoxGeometry(0.03, rimR - 0.07, spokeW);
+      sg.translate(faceX - 0.03, (rimR - 0.07) / 2 + 0.05, 0);
+      sg.rotateX((i / count) * Math.PI * 2);
+      spokes.push(sg);
     }
+    const merged = mergeGeometries(spokes);
+    for (const sg of spokes) sg.dispose();
+    rim.add(mesh(merged, m.rim));
   }
   // brake drum on the inner side
   const drum = mesh(new THREE.CylinderGeometry(rimR - 0.03, rimR - 0.03, width * 0.6, 32), m.matteBlack, { castShadow: false });

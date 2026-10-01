@@ -26,6 +26,14 @@ export interface PanelEvents {
   onSelectSlot?: (slot: SlotId | null) => void;
 }
 
+export interface ToggleSpec {
+  id: string;
+  label: string;
+  hint?: string;
+  on: boolean;
+  onChange: (on: boolean) => void;
+}
+
 /** Quick-pick swatches shown under each colour input. */
 const SWATCHES = ['#d9232e', '#f26b1d', '#f2c230', '#2fb15b', '#1f8fd6', '#1b2a6b', '#7a3cff', '#f4f4f2', '#a7adb6', '#141416'];
 
@@ -36,6 +44,8 @@ export class Panel {
   private colorInputs = new Map<ColorZone, HTMLInputElement>();
   private patternChips = new Map<PatternId, HTMLButtonElement>();
   private envChips = new Map<EnvId, HTMLButtonElement>();
+  private toggles = new Map<string, HTMLButtonElement>();
+  private sceneSection!: HTMLElement;
   private logoChips = new Map<LogoZone, Map<string, HTMLButtonElement>>();
   private numberInput!: HTMLInputElement;
   private selected: SlotId | null = null;
@@ -44,6 +54,32 @@ export class Panel {
     root.replaceChildren(this.buildSceneSection(), this.buildPartsSection(), this.buildLiverySection());
     this.sync();
     store.subscribe(() => this.sync());
+  }
+
+  /** Add a card of on/off chips (view options that live outside the build state). */
+  addToggles(title: string, specs: ToggleSpec[]): void {
+    const card = el('div', 'card');
+    card.append(el('h3', 'card__title', title));
+    const row = el('div', 'chips chips--flush');
+    for (const t of specs) {
+      const chip = chipButton(t.label, () => {
+        const on = chip.getAttribute('aria-pressed') !== 'true';
+        setOn(chip, on);
+        t.onChange(on);
+      });
+      if (t.hint) chip.title = t.hint;
+      setOn(chip, t.on);
+      this.toggles.set(t.id, chip);
+      row.append(chip);
+    }
+    card.append(row);
+    this.sceneSection.append(card);
+  }
+
+  /** Reflect a toggle changed elsewhere (keyboard shortcut). */
+  setToggle(id: string, on: boolean): void {
+    const chip = this.toggles.get(id);
+    if (chip) setOn(chip, on);
   }
 
   /** Reflect a selection made in the 3D view. */
@@ -83,6 +119,7 @@ export class Panel {
     prow.append(rnd);
     presets.append(prow);
     wrap.append(presets);
+    this.sceneSection = wrap;
     return wrap;
   }
 

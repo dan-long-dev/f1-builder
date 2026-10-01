@@ -368,3 +368,10 @@ html, body {
   .panel__foot { padding: 10px 16px; }
   .toast { bottom: 44px; }
 }
+
+/* ---- lil-gui sits over the stage ---- */
+.lil-gui.autoPlace { position: fixed; top: 12px; left: 12px; right: auto; z-index: 20; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slot, .chip, .btn, .toast { transition: none; }
+}
