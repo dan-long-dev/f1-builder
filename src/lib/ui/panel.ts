@@ -18,6 +18,9 @@ import {
   type VariantId,
 } from '../catalog';
 import type { Store } from '../state';
+import { PRESETS, presetParts } from '../presets';
+import { randomBuild } from '../random';
+import { cloneLivery } from '../state';
 
 export interface PanelEvents {
   onSelectSlot?: (slot: SlotId | null) => void;
@@ -68,6 +71,18 @@ export class Panel {
     }
     card.append(row);
     wrap.append(card);
+
+    const presets = el('div', 'card');
+    presets.append(el('h3', 'card__title', 'Presets'));
+    const prow = el('div', 'chips chips--flush');
+    for (const p of PRESETS) {
+      prow.append(chipButton(p.label, () => this.store.set({ parts: presetParts(p), livery: cloneLivery(p.livery) })));
+    }
+    const rnd = chipButton('Random', () => this.store.set(randomBuild()));
+    rnd.classList.add('chip--accent');
+    prow.append(rnd);
+    presets.append(prow);
+    wrap.append(presets);
     return wrap;
   }
 

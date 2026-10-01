@@ -32,9 +32,9 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] Env in URL state; switching is instant and disposes the old one
 
 ## Phase 6 — Snapshot, share, presets
-- [ ] Snapshot: PNG download, Web Share where available
-- [ ] Share: copy link button; build loads from URL on open
-- [ ] 6 preset liveries + randomise
+- [x] Snapshot: PNG download, Web Share where available
+- [x] Share: copy link button; build loads from URL on open
+- [x] 6 preset liveries + randomise
 
 ## Phase 7 — Flourishes and polish
 - [ ] DRS toggle (animated), turntable, exploded view

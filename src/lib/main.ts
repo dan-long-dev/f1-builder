@@ -7,6 +7,9 @@ import { Car } from './car/car';
 import { SLOTS, SLOT_LABELS } from './catalog';
 import { Store, decodeState, encodeState, writeStateToUrl } from './state';
 import { Panel } from './ui/panel';
+import { captureFrame, canShareImage, downloadBlob, shareImage } from './ui/snapshot';
+import { copyLink } from './ui/share';
+import { Toast } from './ui/toast';
 
 declare global {
   interface Window {
@@ -53,6 +56,34 @@ export function boot(): void {
   });
   window.addEventListener('hashchange', () => {
     if (encodeState(store.state) !== location.hash.replace(/^#/, '')) store.replace(decodeState(location.hash));
+  });
+
+  // snapshot + share
+  const toast = new Toast(document.getElementById('toast') as HTMLElement);
+  const filename = (): string => `f1-builder-${store.state.livery.number}.png`;
+  document.getElementById('btn-snapshot')?.addEventListener('click', async () => {
+    try {
+      const blob = await captureFrame(viewer, `F1 Builder · #${store.state.livery.number}`);
+      downloadBlob(blob, filename());
+      toast.show('Snapshot saved');
+    } catch (err) {
+      console.error(err);
+      toast.show('Snapshot failed');
+    }
+  });
+  const shareImageBtn = document.getElementById('btn-share-image') as HTMLButtonElement | null;
+  if (shareImageBtn && canShareImage()) {
+    shareImageBtn.hidden = false;
+    shareImageBtn.addEventListener('click', async () => {
+      const blob = await captureFrame(viewer, `F1 Builder · #${store.state.livery.number}`);
+      if (!(await shareImage(blob, filename(), 'My F1 Builder car'))) downloadBlob(blob, filename());
+    });
+  }
+  document.getElementById('btn-share')?.addEventListener('click', async () => {
+    const url = location.href;
+    const result = await copyLink(url);
+    if (result === 'copied') toast.show('Link copied. It reproduces this exact build.');
+    else if (result === 'failed') toast.show('Copy this link:', { input: url });
   });
 
   applyDebugViews(viewer);
