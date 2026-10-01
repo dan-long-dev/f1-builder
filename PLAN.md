@@ -28,8 +28,8 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] Livery in URL state
 
 ## Phase 5 — Environments
-- [ ] Studio, pit garage, track, sunset: background, env map, lights, floor, fog
-- [ ] Env in URL state; switching is instant and disposes the old one
+- [x] Studio, pit garage, track, sunset: background, env map, lights, floor, fog
+- [x] Env in URL state; switching is instant and disposes the old one
 
 ## Phase 6 — Snapshot, share, presets
 - [ ] Snapshot: PNG download, Web Share where available

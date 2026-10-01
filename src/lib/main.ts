@@ -1,5 +1,5 @@
 import { Viewer } from './scene/viewer';
-import { buildStudio } from './scene/studio';
+import { Environments } from './scene/environments';
 import { applyDebugViews } from './scene/debugViews';
 import { Picker } from './scene/picking';
 import { Materials } from './car/materials';
@@ -25,7 +25,8 @@ export function boot(): void {
 
   const store = new Store(decodeState(location.hash));
   const viewer = new Viewer(canvas, stage);
-  buildStudio(viewer.scene, viewer.renderer);
+  const envs = new Environments(viewer.scene, viewer.renderer);
+  envs.set(store.state.env);
 
   const materials = new Materials();
   const car = new Car(materials, store.state.parts, store.state.livery);
@@ -47,6 +48,7 @@ export function boot(): void {
       picker.refresh();
     }
     if (patch.livery) car.setLivery(state.livery);
+    if (patch.env) envs.set(state.env);
     writeStateToUrl(state);
   });
   window.addEventListener('hashchange', () => {

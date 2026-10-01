@@ -1,13 +1,16 @@
 import {
+  DEFAULT_ENV,
   DEFAULT_LIVERY,
   DEFAULT_PARTS,
   NUMBER_RANGE,
   SLOTS,
+  isEnv,
   isHexColor,
   isLogo,
   isPattern,
   isVariant,
   type ColorZone,
+  type EnvId,
   type Livery,
   type LogoZone,
   type Parts,
@@ -19,11 +22,13 @@ import {
 export interface BuildState {
   parts: Parts;
   livery: Livery;
+  env: EnvId;
 }
 
 export interface Patch {
   parts?: Partial<Parts>;
   livery?: Partial<Omit<Livery, 'colors' | 'logos'>> & { colors?: Partial<Livery['colors']>; logos?: Partial<Livery['logos']> };
+  env?: EnvId;
 }
 
 export type Listener = (state: BuildState, patch: Patch) => void;
@@ -58,6 +63,7 @@ export class Store {
             logos: { ...cur.livery.logos, ...(patch.livery.logos ?? {}) },
           }
         : cur.livery,
+      env: patch.env ?? cur.env,
     };
     this.current = next;
     for (const fn of this.listeners) fn(next, patch);
@@ -66,7 +72,7 @@ export class Store {
   /** Replace the whole state (load a preset, follow a hash change). */
   replace(state: BuildState): void {
     this.current = state;
-    for (const fn of this.listeners) fn(state, { parts: state.parts, livery: state.livery });
+    for (const fn of this.listeners) fn(state, { parts: state.parts, livery: state.livery, env: state.env });
   }
 
   setPart<S extends SlotId>(slot: S, variant: VariantId<S>): void {
@@ -81,7 +87,7 @@ export class Store {
 }
 
 export function defaultState(): BuildState {
-  return { parts: { ...DEFAULT_PARTS }, livery: cloneLivery(DEFAULT_LIVERY) };
+  return { parts: { ...DEFAULT_PARTS }, livery: cloneLivery(DEFAULT_LIVERY), env: DEFAULT_ENV };
 }
 
 export function cloneLivery(l: Livery): Livery {
@@ -101,6 +107,7 @@ export function encodeState(s: BuildState): string {
   p.set('pat', s.livery.pattern);
   p.set('lg', ZONE_ORDER.map((z) => s.livery.logos[z] || '-').join('.'));
   p.set('num', String(s.livery.number));
+  p.set('env', s.env);
   return p.toString();
 }
 
@@ -131,6 +138,8 @@ export function decodeState(hash: string): BuildState {
   }
   const num = Number(p.get('num'));
   if (Number.isInteger(num) && num >= NUMBER_RANGE.min && num <= NUMBER_RANGE.max) s.livery.number = num;
+  const env = p.get('env');
+  if (env && isEnv(env)) s.env = env;
   return s;
 }
 

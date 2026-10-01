@@ -117,3 +117,18 @@ export function isLogoZone(id: string): id is LogoZone {
 export function isHexColor(s: string): boolean {
   return /^#[0-9a-f]{6}$/i.test(s);
 }
+
+/* ---- environments ---- */
+
+export const ENVS = {
+  studio: 'Studio',
+  garage: 'Pit garage',
+  track: 'Track',
+  sunset: 'Sunset',
+} as const;
+export type EnvId = keyof typeof ENVS;
+export const DEFAULT_ENV: EnvId = 'studio';
+
+export function isEnv(id: string): id is EnvId {
+  return Object.prototype.hasOwnProperty.call(ENVS, id);
+}

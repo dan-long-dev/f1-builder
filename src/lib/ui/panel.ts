@@ -1,5 +1,6 @@
 import {
   COLOR_ZONES,
+  ENVS,
   LOGOS,
   LOGO_ZONES,
   NUMBER_RANGE,
@@ -9,6 +10,7 @@ import {
   VARIANTS,
   variantIds,
   type ColorZone,
+  type EnvId,
   type LogoId,
   type LogoZone,
   type PatternId,
@@ -30,12 +32,13 @@ export class Panel {
   private chips = new Map<SlotId, Map<string, HTMLButtonElement>>();
   private colorInputs = new Map<ColorZone, HTMLInputElement>();
   private patternChips = new Map<PatternId, HTMLButtonElement>();
+  private envChips = new Map<EnvId, HTMLButtonElement>();
   private logoChips = new Map<LogoZone, Map<string, HTMLButtonElement>>();
   private numberInput!: HTMLInputElement;
   private selected: SlotId | null = null;
 
   constructor(root: HTMLElement, private store: Store, private events: PanelEvents = {}) {
-    root.replaceChildren(this.buildPartsSection(), this.buildLiverySection());
+    root.replaceChildren(this.buildSceneSection(), this.buildPartsSection(), this.buildLiverySection());
     this.sync();
     store.subscribe(() => this.sync());
   }
@@ -48,6 +51,24 @@ export class Panel {
       sec.classList.toggle('is-selected', on);
       if (on) sec.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
+  }
+
+  /* ---- scene ---- */
+
+  private buildSceneSection(): HTMLElement {
+    const wrap = el('section', 'group');
+    wrap.append(el('h2', 'group__title', 'Scene'));
+    const card = el('div', 'card');
+    card.append(el('h3', 'card__title', 'Environment'));
+    const row = el('div', 'chips chips--flush');
+    for (const id of Object.keys(ENVS) as EnvId[]) {
+      const chip = chipButton(ENVS[id], () => this.store.set({ env: id }));
+      this.envChips.set(id, chip);
+      row.append(chip);
+    }
+    card.append(row);
+    wrap.append(card);
+    return wrap;
   }
 
   /* ---- parts ---- */
@@ -186,7 +207,8 @@ export class Panel {
   }
 
   private sync(): void {
-    const { parts, livery } = this.store.state;
+    const { parts, livery, env } = this.store.state;
+    for (const [id, chip] of this.envChips) setOn(chip, id === env);
     for (const slot of SLOTS) {
       const current = parts[slot];
       const value = this.sections.get(slot)?.querySelector('.slot__value');
