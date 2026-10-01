@@ -21,9 +21,9 @@ export class Materials {
 
   constructor() {
     this.wing = this.makePaint(config.colors.wings);
-    this.wing.roughness = 0.5;
-    this.wing.clearcoat = 0.45;
-    this.wing.clearcoatRoughness = 0.25;
+    this.wing.roughness = 0.55;
+    this.wing.clearcoat = 0.15;
+    this.wing.clearcoatRoughness = 0.3;
     this.rim = new THREE.MeshStandardMaterial({ color: config.colors.rims, roughness: 0.3, metalness: 0.85 });
     this.shared = new Set([
       this.carbon,

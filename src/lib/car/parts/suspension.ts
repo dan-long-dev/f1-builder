@@ -25,7 +25,7 @@ export function buildSuspension(ctx: PartContext): THREE.Group {
       g.add(rod(V(s * inner, 0.3, z + 0.14), V(s * upright, 0.32, z + 0.1), r * 0.8, m.carbon));
     }
   };
-  axle(car.frontAxleZ, 0.2, 0.66, 0.44, 0.18);
-  axle(car.frontAxleZ - car.wheelbase, 0.15, 0.58, 0.42, 0.16);
+  axle(car.frontAxleZ, 0.12, 0.66, 0.4, 0.2);
+  axle(car.frontAxleZ - car.wheelbase, 0.08, 0.58, 0.38, 0.17);
   return g;
 }

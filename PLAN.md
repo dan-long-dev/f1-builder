@@ -15,10 +15,10 @@ Build order. Tick boxes as they land; one phase per commit.
 - [x] Car assembled from `config.car`, one variant per slot; reads as an F1 car from every angle
 
 ## Phase 3 — Picking and swapping
-- [ ] Hover highlight, click to select, click empty space to deselect
-- [ ] Variants: 3 noses, 3 front wings, 3 rear wings, 3 sidepods, 3 engine covers, 5 tyre compounds, 3 rim styles
-- [ ] Panel lists slots and variants; selecting in 3D focuses the slot in the panel and vice versa
-- [ ] State module with URL encode/decode (parts only so far)
+- [x] Hover highlight, click to select, click empty space to deselect
+- [x] Variants: 3 noses, 3 front wings, 3 rear wings, 3 sidepods, 3 engine covers, 5 tyre compounds, 3 rim styles
+- [x] Panel lists slots and variants; selecting in 3D focuses the slot in the panel and vice versa
+- [x] State module with URL encode/decode (parts only so far)
 
 ## Phase 4 — Livery
 - [ ] Zone colours: body, pattern, wings, rims, helmet
